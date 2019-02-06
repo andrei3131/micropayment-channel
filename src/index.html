@@ -23,7 +23,7 @@
     <!-- Truffle contract  will our life easier when interacting with smart contracts -->
     <script src="JShelpers/truffle-contract.js"></script>
     <!-- app.js is where we will write our JS logic -->
-    <script src="js/app.js" type="module"></script>
+    <script src="js/app.js"></script>
 
   <style>
 @import url("https://fonts.googleapis.com/css?family=Roboto:400,700");
@@ -348,8 +348,19 @@ div.tooltip-inner {
   <div class="box-container">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h3 style="padding-top: 0px; margin-top: 0px; margin-bottom: 5px">Transfer of <strong id="amount"></strong> <strong class="tkn-symbol">TKN</strong> requested</h3>
-        <h4 style="padding-top: 0px;">µRaiden payment channel demo</h4>
+        <h3 style="padding-top: 0px; margin-top: 0px; margin-bottom: 5px">Transfer of <strong id="price">50</strong> <strong class="tkn-symbol">TKN</strong> requested by vendor</h3>
+       
+        <div class="account-dropdown form-horizontal">
+          <div class="row">
+            <div class="col-xs-8 col-xs-offset-2 uppertoolbar">
+              <div class="input-group input-group">
+                <span class="input-group-addon account-label" style="font-size: 16px" data-toggle="tooltip" data-placement="left" title="Vendor account">Vendor Account</span>
+                <input type="text" class="form-control tkn-balance tkn-decimals" id="vendor_address" placeholder="Vendor address"
+                    style="font-size: 13px; text-align:right; border-right-width: 0px;" readonly>
+              </div>
+            </div>
+          </div>        
+
 
       <!--<h4>Read this article and support the
         <span id="publisher" >publisher</span> -
@@ -358,6 +369,7 @@ div.tooltip-inner {
         <div class="col-xs-10 col-xs-offset-2 instructions" style="padding-left: 0px; text-align: left; margin-top: 30px; margin-bottom: 30px">
 
           <h5>
+              // NO need for the buy button now; set-up payment channel
               1. Click <strong>Buy</strong> to get <strong class="tkn-symbol">TKN</strong> tokens in exchange for Ropsten Testnet ETH.
           </h5>
           <h5 style="margin-top: 10px;">
@@ -374,12 +386,14 @@ div.tooltip-inner {
           </h5> -->
         </div>
 
+        <!-- <button type="button" onclick="getSelectedAccount()" >abc</button> -->
+
       <div class="account-dropdown form-horizontal">
         <div class="row">
           <div class="col-xs-8 col-xs-offset-2 uppertoolbar">
             <div class="input-group input-group">
               <span class="input-group-addon account-label" style="font-size: 16px" data-toggle="tooltip" data-placement="left" title="This is your current web3 account">Account</span>
-              <select class="form-control account-select" id="accounts"><option value="" disabled selected>Select your testnet account</option></select>
+              <select class="form-control account-select" id="accounts" onchange="updateBalance()"><option value="" disabled selected>Select your testnet account</option></select>
             </div>
           </div>
         </div>
@@ -413,15 +427,16 @@ div.tooltip-inner {
       </div>
     </div>
 
-    <div id="balance">
+    <!-- <div id="balance">
       The balance is: 
     </div>
 
     <div>
       <ul id="eventsList">
-        <!-- Events will appear here from app.js -->
+        <!- - Events will appear here from app.js - ->
       </ul>
-  </div>
+  </div> 
+  -->
 
     <div class="panel-body">
       <div class="row main_switch bottom-section-text" id="no_accounts">

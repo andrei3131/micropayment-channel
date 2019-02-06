@@ -2,6 +2,7 @@ var web3Provider = null;
 var WrestlingContract;
 const nullAddress = "0x0000000000000000000000000000000000000000";
 
+
 //import {Personal} from 'web3-eth-personal';
 
 //var Personal = require('../../node_modules/web3-eth-personal')
@@ -53,12 +54,67 @@ function initWrestlingContract () {
 
     // listen to the events emitted by our smart contract
     getEvents();
-    getMyBalance();
+    //getMyBalance();
  
+    $('#vendor_address').val('0xeB69331eE6C91C97FDE4B11ab0f8b69F6c7fCf2D');
+
+    showAccounts();
+
+
     //showViews();
 
     //signMessage("Test message");
   });
+}
+
+function updateBalance() {
+  WrestlingContract
+  .deployed()
+  .then(instance => {
+    var selectedAccountAddress = getSelectedAccount();
+    console.log(selectedAccountAddress);
+    instance.getBalance.call(selectedAccountAddress).then(function(res) {
+      console.log('ress');
+      console.log(res);
+      console.log("Select your testnet account" == "Select your testnet account");
+      console.log('ress end');
+
+      if(selectedAccountAddress == "Select your testnet account") {
+        $('#token_balance').val(res.c[0]);
+        console.log('YESZ');
+      } else {
+        console.log('YESZassas');
+        $('#token_balance').val(res.c[0]);
+      }
+    });
+  })
+  .catch(e => {
+    console.error(e)
+})
+}
+
+function getSelectedAccount() {
+  return $( "#accounts option:selected" ).text();
+}
+
+function getVendorAccount() {
+  return $('#vendor_address').val();
+}
+
+function showAccounts() {
+  var allAccounts = web3.eth.accounts;
+  if(allAccounts.length == 0) {
+     showView('#no_accounts');
+     return;
+  }
+  console.log(allAccounts);
+    var $accounts = $('#accounts');
+
+    for(var i = 0; i < allAccounts.length; i++) {
+      var o = $("<option></option>").attr("value", i).text(allAccounts[i]);
+      $accounts.append(o);
+    }
+    $accounts.change();
 }
 
 

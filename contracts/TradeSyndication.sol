@@ -4,6 +4,7 @@ contract TradeSyndication {
 
     address public owner;
     mapping (address => uint256) balanceOf;
+    mapping (address => address) channels;
 
     constructor(uint256 initialSupply) public {
         owner = msg.sender;
@@ -19,28 +20,19 @@ contract TradeSyndication {
         return true;
     }
 
+
+    function createChannel(address _sender, address _receiver) public {
+        channels[_sender] = _receiver;
+    }
+
     event Debug(address _addr, string _msg);
     event DebugValue(address _addr, string _msg, uint256 _val);
-    event TestEvent(uint _nmber);
 
-    function mata() public {
-        emit TestEvent(123);
-        emit Debug(msg.sender, "The value of the message");
+    function getBalance(address _addr) public returns (uint256) {
+        //emit DebugValue(_addr, "The value of the message", balanceOf[_addr]);
+        return balanceOf[_addr];
     }
 
-    function getBalance() public returns (uint256) {
-        emit TestEvent(123);
-        emit DebugValue(msg.sender, "The value of the message", balanceOf[msg.sender]);
-        return balanceOf[msg.sender];
-    }
-
-
-    event WrestlingStartsEvent(address wrestler1, address wrestler2);
-
-	function registerAsAnOpponent() public {
-
-        emit WrestlingStartsEvent(msg.sender, msg.sender);
-    }
 
 
 
