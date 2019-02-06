@@ -38,6 +38,7 @@ function initWeb3() {
 
   // we init The Wrestling contract infos so we can interact with it
   initWrestlingContract();
+
 }
 
 
@@ -51,16 +52,12 @@ function initWrestlingContract () {
     WrestlingContract.setProvider(web3Provider);
 
     // listen to the events emitted by our smart contract
-    getEvents ();
-    //getMyBalance();
+    getEvents();
+    getMyBalance();
+ 
+    //showViews();
 
-    // We'll retrieve the Wrestlers addresses set in our contract using Web3.js
-    //getFirstWrestlerAddress();
-    //getSecondWrestlerAddress();
-
-    showViews();
-
-    signMessage("Test message");
+    //signMessage("Test message");
   });
 }
 
@@ -71,46 +68,51 @@ function showViews() {
 
 
 
-function getMyBalance () {
+function getEvents () {
   WrestlingContract.deployed().then(function(instance) {
-    console.log("getting my balance")
-    web3.eth.getBalance([], function(err,res) {
-      $("#balance").text(res);
-      console.log(res.toString(10)); // because you get a BigNumber
+    var events = instance.allEvents(function(error, log){
+      if (!error) {
+        $("#eventsList").prepend('<li>' + log.event + '</li>'); // Using JQuery, we will add new events to a list in our index.html
+        console.log('*** Event intercepted: ***');
+        console.log(log.event + ": ");
+        for(var key in log.args) {
+            console.log("- " + key + ": " + log.args[key]);
+        }
+      }
     });
-  })
-
-
-  WrestlingContract.deployed().then(function(instance) {
-    return instance.getBalance.call();
-  }).then(function(result) {
-    $("#balance").text(result); // Using JQuery again, we will modify the html tag with id wrestler1 with the returned text from our call on the instance of the wrestling contract we deployed
-  }).catch(function(err) {
-    console.log(err.message);
-  });
-
-  WrestlingContract.deployed().then(function(instance) {
-    instance.deposit(999);
-    return instance.getBalance.call();
-  }).then(function(result) {
-    console.log(result);
-    $("#balance").text(result); // Using JQuery again, we will modify the html tag with id wrestler1 with the returned text from our call on the instance of the wrestling contract we deployed
-  }).catch(function(err) {
-    console.log(err.message);
+    }).catch(function(err) {
+      console.log(err.message);
   });
 }
 
 
-function getEvents () {
-  WrestlingContract.deployed().then(function(instance) {
-  var events = instance.allEvents(function(error, log){
-    console.log("Got an event")
-    if (!error)
-      $("#eventsList").prepend('<li>' + log.event + '</li>'); // Using JQuery, we will add new events to a list in our index.html
-  });
-  }).catch(function(err) {
-    console.log(err.message);
-  });
+function getMyBalance () {
+  WrestlingContract
+  .deployed()
+  .then(instance => {
+    console.log("getting my balance")
+    instance.getBalance().then(function(res) {
+      $("#balance").text(res);
+      console.log(res); // because you get a BigNumber
+    });
+  })
+  .catch(e => {
+    console.error(e)
+})
+
+  WrestlingContract
+  .deployed()
+  .then(instance => {
+    console.log("getting my balance")
+    instance.mata().then(function(res) {
+      //$("#balance").text(res);
+      console.log(res); // because you get a BigNumber
+    });
+  })
+  .catch(e => {
+    console.error(e)
+})
+
 }
 
 

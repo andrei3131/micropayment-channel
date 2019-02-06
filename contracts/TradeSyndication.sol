@@ -3,32 +3,45 @@ pragma solidity ^0.5.0;
 contract TradeSyndication {
 
     address public owner;
-    mapping (address => uint256) balances;
+    mapping (address => uint256) balanceOf;
 
-    constructor() public {
+    constructor(uint256 initialSupply) public {
         owner = msg.sender;
-        balances[msg.sender] = 888;
+        balanceOf[msg.sender] = initialSupply;
     }
 
-    modifier onlyOwner() {
-        require(msg.sender == owner);
-        _;
+    /* Send coins */
+    function transfer(address _to, uint256 _value) public returns (bool success) {
+        require(balanceOf[msg.sender] >= _value);           // Check if the sender has enough
+        require(balanceOf[_to] + _value >= balanceOf[_to]); // Check for overflows
+        balanceOf[msg.sender] -= _value;                    // Subtract from the sender
+        balanceOf[_to] += _value;                           // Add the same to the recipient
+        return true;
     }
 
-    function getString() public pure returns (string memory) {
-        return "A string";
+    event Debug(address _addr, string _msg);
+    event DebugValue(address _addr, string _msg, uint256 _val);
+    event TestEvent(uint _nmber);
+
+    function mata() public {
+        emit TestEvent(123);
+        emit Debug(msg.sender, "The value of the message");
     }
 
-    event DepositSuccess(string message);
-
-    function deposit(uint256 amount) public {
-        balances[msg.sender] += amount;
-        emit DepositSuccess("Yesss");
+    function getBalance() public returns (uint256) {
+        emit TestEvent(123);
+        emit DebugValue(msg.sender, "The value of the message", balanceOf[msg.sender]);
+        return balanceOf[msg.sender];
     }
 
-    function getBalance() public view returns (uint256) {
-        return balances[msg.sender];
+
+    event WrestlingStartsEvent(address wrestler1, address wrestler2);
+
+	function registerAsAnOpponent() public {
+
+        emit WrestlingStartsEvent(msg.sender, msg.sender);
     }
+
 
 
     // Message signature verification
