@@ -12,7 +12,7 @@ const vendor_address = '0xeB69331eE6C91C97FDE4B11ab0f8b69F6c7fCf2D';
 
 // Control flow
 function showView(id) {
-  $(".main_switch"+id).show();
+  $(".main_switch" + id).show();
   $(".main_switch:not("+id+")").hide();
   $(".container").show();
 }
@@ -132,10 +132,11 @@ function getEvents () {
 function showAlert(type, message) {
     $(`#${type}-alert`).show();
     $(`#${type}-alert #${type}-message`).text(message);
-    sleep(2000).then(() => {
+    sleep(1000).then(() => {
       $(`#${type}-alert`).hide();      
     });
 }
+
 
 function openChannel() {
   var channel_value = $('#channel_value').val();
@@ -165,18 +166,18 @@ function openChannel() {
 
       instance.channel(vendor_address, timeout, load_up).then((result)=>  {
           console.log("Send transaction successful " + result)
-          showAlert('opened', "Channel opened.")
+          showAlert('opened', "Channel opened.");
 
-          console.log(instance.address);
+          // update user balance
+          getBalance();
 
-          web3.eth.getBalance(instance.address).then( balance => {
-            console.log('The balance ...')
-            console.log('Contract balance is ' + balance);
-            console.log('should be before')
-
-            $('#main-view').css('display: none;');
-            $('#transfer-view').css('display: block');
-          });
+      }).then( () =>  {
+        // Log contract balance
+        web3.eth.getBalance(instance.address, function (error, balance) {
+          showView('#transfer-view');
+          $(`#transfer-view #opened-message-transfer`).text(`Current channel balance is ${balance} wei`);
+          
+        });
       }); 
   })
 

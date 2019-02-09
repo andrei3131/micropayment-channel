@@ -10,6 +10,15 @@ contract ChannelContract {
     mapping (bytes32 => address) signatures;
 
 
+    /* 
+        The fallback function is necessary in case a user wants to interact with the contract
+        from a wallet. In this case the function takes no arguments, but accepts funds, i.e. the user
+        who knows the address of its channel with the vendor wants to top-up directly from his wallet.
+        In this case, we assume the channel receiver has been set previously from the web interface.
+        This is useful for online services, such as a mobile carrier top-up.    
+    */
+    function () external payable { }
+
     function channel(address payable _to, uint _timeout) public payable {
         require(msg.value >= servicePrice);
 

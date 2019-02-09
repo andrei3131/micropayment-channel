@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>µRaiden</title>
+  <title>Micro-Payment Channel</title>
   <base href="/">
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,7 +14,7 @@
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.1.4/js.cookie.min.js"></script>
-
+  <script src="https://www.w3schools.com/lib/w3data.js"></script>
 
     <!-- JQuery will help us extract data from json files -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -24,6 +24,11 @@
     <script src="JShelpers/truffle-contract.js"></script>
     <!-- app.js is where we will write our JS logic -->
     <script src="js/app.js"></script>
+
+
+  <script>
+      w3IncludeHTML();
+  </script>
 
   <style>
 @import url("https://fonts.googleapis.com/css?family=Roboto:400,700");
@@ -345,14 +350,9 @@ div.tooltip-inner {
 </head>
 
 <body style="overflow-y: auto;">
-
-
-
-
-
   <div class="box-container">
     <div class="panel panel-default">
-      <div class="panel-heading" id="home-view" style="display: block">
+        <div class="panel-heading">
         <h3 style="padding-top: 0px; margin-top: 0px; margin-bottom: 5px">Transfer requested by vendor</h3>
 
         <div class="account-dropdown form-horizontal">
@@ -410,14 +410,14 @@ div.tooltip-inner {
                  
                 </div>
               </div>
-              <div class="col-xs-8 col-xs-offset-2 uppertoolbar" style="margin-top: 1cm; padding-left: 0px;" id="topup-column">
+              <div class="main_switch col-xs-8 col-xs-offset-2 uppertoolbar" style="margin-top: 1cm; padding-left: 0px;" id="topup-column">
                 <div class="input-group input-group">
                   <input type="number" class="form-control tkn-decimals" id="channel_value" placeholder="Amount to deposit"
-                    style="text-align: center; font-size: 16px; height: 34px" min="0" value="0"/>
+                    style="text-align: center; font-size: 16px; height: 34px" min="0"/>
                     <input type="number" class="form-control tkn-decimals" id="timeout" placeholder="Channel timeout"
-                    style="text-align: center; font-size: 16px; height: 34px" min="0" value="0"/>
+                    style="text-align: center; font-size: 16px; height: 34px" min="0"/>
                 </div>
-                <span class="input-group-btn">
+                <span class="main_switch input-group-btn">
                     <span class="btn btn-default topup_start col-xs-8 col-xs-offset-2 uppertoolbar" onclick="openChannel()" style="font-size: 16px">Open Channel with Vendor</span>
                 </span>
               </div>
@@ -439,6 +439,31 @@ div.tooltip-inner {
     <!--  Error handling -->
                         
          
+
+        
+        
+  
+      <div class="main_switch" id="transfer-view" style="display: none">
+          <span id="opened-icon-transfer" class="glyphicon glyphicon-ok-circle on-state on-state-opened" aria-hidden="true"></span>
+          <span id="opened-message-transfer"></span>
+          <div class="row">
+              <div class="col-xs-8 col-xs-offset-2 uppertoolbar">
+                <div class="row deposit">
+                  <div class="col-sm-12">
+                    <div class="input-group input-group">
+                      <span class="input-group-addon account-label" style="font-size: 16px">Execute payment</span>
+                      <input type="text" class="form-control tkn-balance tkn-decimals" id="payment_value" placeholder="Amount ETH"
+                        style="font-size: 16px; text-align:left; border-right-width: 0px;">
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default token_buy" data-toggle="tooltip" data-placement="bottom" onclick="executePaymnent()" title="Pay">Pay</button>
+                          </span>
+                    </div>
+                  </div>
+      </div>
+          
+            
+    
+
     <!-- <div id="balance">
       The balance is: 
     </div>
@@ -450,94 +475,9 @@ div.tooltip-inner {
   </div> 
   -->
 
-
-  <div class="panel-heading" id="transfer-view" style="display: none">
-      <h3 style="padding-top: 0px; margin-top: 0px; margin-bottom: 5px">Transfer BLAAA requested by vendor</h3>
-
-      <div class="account-dropdown form-horizontal">
-        <div class="row">
-          <div class="col-xs-8 col-xs-offset-2 uppertoolbar">
-            <div class="input-group input-group">
-              <span class="input-group-addon account-label" style="font-size: 16px" data-toggle="tooltip" data-placement="left" title="Vendor account">Vendor Account</span>
-              <input type="text" class="form-control tkn-balance tkn-decimals" id="vendor_address" placeholder="Vendor address"
-                  style="font-size: 13px; text-align:right; border-right-width: 0px;" readonly>
-            </div>
-          </div>
-        </div>        
-
-
-    <!--<h4>Read this article and support the
-      <span id="publisher" >publisher</span> -
-    </h4>
-    <h4>by transfering <strong id="amount"></strong> TKN tokens.</h4> -->
-      <div class="col-xs-10 col-xs-offset-2 instructions" style="padding-left: 0px; text-align: left; margin-top: 30px; margin-bottom: 30px">
-
-    
-        <h5 style="margin-top: 10px;">
-            1. Click <strong>Open Channel with Vendor</strong> to open a channel with chosen amount of <strong class="tkn-symbol">ETH</strong>.
-        </h5>
-        <h5 style="margin-top: 10px;">
-            3. For each transfer, <strong>sign</strong> the balance proof. YESSSSSSSS
-        </h5>
-        <!--<h5>
-            4. The tokens are now send via the µRaiden payment channel.
-        </h5>
-        <h5>
-            5. PS: the balance is the cumulative sum of all previous payments and current one. It may also be shown multiplied by as many decimals as token decimals (up to 18).
-        </h5> -->
-      </div>
-
-      <!-- <button type="button" onclick="getSelectedAccount()" >abc</button> -->
-
-    <div class="account-dropdown form-horizontal">
-      <div class="row">
-        <div class="col-xs-8 col-xs-offset-2 uppertoolbar">
-          <div class="input-group input-group">
-            <span class="input-group-addon account-label" style="font-size: 16px" data-toggle="tooltip" data-placement="left" title="This is your current web3 account">Account</span>
-            <select class="form-control account-select" id="accounts" onchange="getBalance()"><option value="" disabled selected>Select account connected to Metamask</option></select>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-xs-8 col-xs-offset-2 uppertoolbar">
-          <div class="row deposit">
-            <div class="col-sm-12" id="balance-column">
-              <div class="input-group input-group">
-                <span class="input-group-addon account-label" style="font-size: 16px">Balance</span>
-                <input type="text" class="form-control tkn-balance tkn-decimals" id="token_balance" placeholder="Amount ETH"
-                  style="font-size: 16px; text-align:left; border-right-width: 0px;" readonly>
-               
-              </div>
-            </div>
-            <div class="col-xs-8 col-xs-offset-2 uppertoolbar" style="margin-top: 1cm; padding-left: 0px;" id="topup-column">
-              <div class="input-group input-group">
-                <input type="number" class="form-control tkn-decimals" id="channel_value" placeholder="Amount to deposit"
-                  style="text-align: center; font-size: 16px; height: 34px" min="0" value="0"/>
-                  <input type="number" class="form-control tkn-decimals" id="timeout" placeholder="Channel timeout"
-                  style="text-align: center; font-size: 16px; height: 34px" min="0" value="0"/>
-              </div>
-              <span class="input-group-btn">
-                  <span class="btn btn-default topup_start col-xs-8 col-xs-offset-2 uppertoolbar" onclick="openChannel()" style="font-size: 16px">Open Channel with Vendor</span>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
-
-  <!--  Error handling -->
-  <div class="alert" id="error-alert" style="display: none;">
-      <span id="error-icon" class="glyphicon glyphicon-ban-circle on-state on-state-closed" aria-hidden="true"></span>
-      <span id="error-message"></span>
-  </div>
-  <div class="alert" id="opened-alert" style="display: none;">
-      <span id="opened-icon" class="glyphicon glyphicon-ok-circle on-state on-state-opened" aria-hidden="true"></span>
-      <span id="opened-message"></span>
-  </div>
-
-
-
+  
+</div>
 
 </body>
 </html>
