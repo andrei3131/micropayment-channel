@@ -1,5 +1,5 @@
-var TradeSyndication = artifacts.require("./TradeSyndication.sol");
+var ChannelContract = artifacts.require("./ChannelContract.sol");
 
 module.exports = function(deployer) {
-  deployer.deploy(TradeSyndication, 1000);
+  deployer.deploy(ChannelContract);
 };

@@ -1,6 +1,9 @@
 var web3Provider = null;
-var WrestlingContract;
-const nullAddress = "0x0000000000000000000000000000000000000000";
+var ChannelContract;
+const nullAddress = '0x0000000000000000000000000000000000000000';
+const vendor_address = '0xeB69331eE6C91C97FDE4B11ab0f8b69F6c7fCf2D';
+
+
 
 
 //import {Personal} from 'web3-eth-personal';
@@ -37,26 +40,26 @@ function initWeb3() {
     alert('No web3 provider found. Please install Metamask on your browser.');
   }
 
-  // we init The Wrestling contract infos so we can interact with it
-  initWrestlingContract();
+  // we init the ChannelContract infos so we can interact with it
+  initInterface();
 
 }
 
 
 
-function initWrestlingContract () {
-  $.getJSON('TradeSyndication.json', function(data) {
+function initInterface () {
+  $.getJSON('ChannelContract.json', function(data) {
     // Get the necessary contract artifact file and instantiate it with truffle-contract
-    WrestlingContract = TruffleContract(data);
+    ChannelContract = TruffleContract(data);
 
     // Set the provider for our contract
-    WrestlingContract.setProvider(web3Provider);
+    ChannelContract.setProvider(web3Provider);
 
     // listen to the events emitted by our smart contract
     getEvents();
     //getMyBalance();
  
-    $('#vendor_address').val('0xeB69331eE6C91C97FDE4B11ab0f8b69F6c7fCf2D');
+    $('#vendor_address').val(vendor_address);
 
     showAccounts();
 
@@ -67,30 +70,20 @@ function initWrestlingContract () {
   });
 }
 
-function updateBalance() {
-  WrestlingContract
-  .deployed()
-  .then(instance => {
-    var selectedAccountAddress = getSelectedAccount();
-    console.log(selectedAccountAddress);
-    instance.getBalance.call(selectedAccountAddress).then(function(res) {
-      console.log('ress');
-      console.log(res);
-      console.log("Select your testnet account" == "Select your testnet account");
-      console.log('ress end');
+function getBalance() {
+  var selectedAccountAddress = getSelectedAccount();
 
-      if(selectedAccountAddress == "Select your testnet account") {
-        $('#token_balance').val(res.c[0]);
-        console.log('YESZ');
-      } else {
-        console.log('YESZassas');
-        $('#token_balance').val(res.c[0]);
-      }
-    });
-  })
-  .catch(e => {
-    console.error(e)
-})
+  if(selectedAccountAddress ==  "Select account connected to Metamask") return;
+  web3.eth.getBalance(selectedAccountAddress, function(err, balance) {
+    balance = web3.fromWei(balance, "ether") + " ETH"        
+    if(selectedAccountAddress == "Select account connected to Metamask") {
+      $('#token_balance').val(balance);
+      console.log('YESZ');
+    } else {
+      console.log('YESZassas');
+      $('#token_balance').val(balance);
+    }
+  });
 }
 
 function getSelectedAccount() {
@@ -118,14 +111,9 @@ function showAccounts() {
 }
 
 
-function showViews() {
-  //showView('#home');
-}
-
-
 
 function getEvents () {
-  WrestlingContract.deployed().then(function(instance) {
+  ChannelContract.deployed().then(function(instance) {
     var events = instance.allEvents(function(error, log){
       if (!error) {
         $("#eventsList").prepend('<li>' + log.event + '</li>'); // Using JQuery, we will add new events to a list in our index.html
@@ -141,34 +129,62 @@ function getEvents () {
   });
 }
 
-
-function getMyBalance () {
-  WrestlingContract
-  .deployed()
-  .then(instance => {
-    console.log("getting my balance")
-    instance.getBalance().then(function(res) {
-      $("#balance").text(res);
-      console.log(res); // because you get a BigNumber
+function showAlert(type, message) {
+    $(`#${type}-alert`).show();
+    $(`#${type}-alert #${type}-message`).text(message);
+    sleep(2000).then(() => {
+      $(`#${type}-alert`).hide();      
     });
-  })
-  .catch(e => {
-    console.error(e)
-})
+}
 
-  WrestlingContract
-  .deployed()
-  .then(instance => {
-    console.log("getting my balance")
-    instance.mata().then(function(res) {
-      //$("#balance").text(res);
-      console.log(res); // because you get a BigNumber
-    });
-  })
-  .catch(e => {
-    console.error(e)
-})
+function openChannel() {
+  var channel_value = $('#channel_value').val();
+  var timeout = $('#timeout').val();
+  // Client side validation to avoid sending transaction to contract
+  if(channel_value < 1) {
+    showAlert('error', 'Invalid deposit value.');
+    return;
+  }
+  
+  if(timeout < 1) {
+    showAlert('error', 'Invalid timeout value.');
+    return;
+  }
+  
 
+  ChannelContract
+    .deployed()
+    .then(instance => {
+      var vendor_address =  $('#vendor_address').val();
+      console.log(instance.address);
+      var load_up = {
+        from: getSelectedAccount(), 
+        to: instance.address, 
+        value: web3.toWei(channel_value, 'ether'),
+      }
+
+      instance.channel(vendor_address, timeout, load_up).then((result)=>  {
+          console.log("Send transaction successful " + result)
+          showAlert('opened', "Channel opened.")
+
+          console.log(instance.address);
+
+          web3.eth.getBalance(instance.address).then( balance => {
+            console.log('The balance ...')
+            console.log('Contract balance is ' + balance);
+            console.log('should be before')
+
+            $('#main-view').css('display: none;');
+            $('#transfer-view').css('display: block');
+          });
+      }); 
+  })
+
+}
+
+
+function sleep (time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
 }
 
 
@@ -197,7 +213,7 @@ function signMessage(message) {
 }
 
 function verifySignedMessage(message, signature) {
-  WrestlingContract
+  ChannelContract
     .deployed()
     .then(instance => {
       let eth_message = `\x19Ethereum Signed Message:\n${message.length}${message}`
