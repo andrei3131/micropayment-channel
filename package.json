@@ -2,7 +2,7 @@
   "name": "micropayment-channel",
   "version": "1.0.0",
   "description": "",
-  "main": "truffle-config.js",
+  "main": "src/js/index.js",
   "directories": {
     "test": "test"
   },

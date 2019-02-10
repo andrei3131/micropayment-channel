@@ -25,8 +25,10 @@ $(function() {
 function init() {
   // We init web3 so we have access to the blockchain
   initWeb3();
+  
 
-
+  //var sock =  require.main.require('path');
+  //console.log(require)
   
   // const wss = new WebSocketServer({ port: 8080 })
   // wss.on('connection', ((ws) => {
@@ -195,14 +197,52 @@ function openChannel() {
   })
 }
 
-
+// Buyer
 function executePaymnent() {
-   store.set('user', [{ name:'Marcus' }]);
-   console.log(store.get('user'));
+   // take contract address and hash and send to client via file or web sockets
+   ChannelContract
+    .deployed()
+    .then(instance => {
+      var transferValue = $('#payment_value').val();
+      console.log(transferValue);
 
-   // take transaction and hash and send to client via file or web sockets
+      signMessage(instance.address, transferValue);
+  })
 }
 
+
+//Seler
+function closeChannel(msgHash, signature) {
+    //var signature = 
+
+   var pastSignatures = store.get('signatures');
+   console.log('Past signatures');
+   console.log(pastSignatures);
+   if(pastSignatures.length == 0) {
+      showAlert('error', 'No signatures registered');
+      console.log('No signatures registered');
+      return;
+   }
+
+   var totalValue = 0;
+   for(var i = 0; i < pastSignatures.length; i++) {
+      var historyEntry = pastSignatures[i]; 
+      var instanceAddress = historyEntry[0];
+      var transferValue = historyEntry[1];
+      var receivedMsgHash = historyEntry[2];
+      var buyerSignature = historyEntry[3];
+
+      var message = "(" + instanceAddress + "," + transferValue + ")";
+      var msgHash = '0x' + toHex(message);
+      if(msgHash != receivedMsgHash) {
+        showAlert('error', 'Message hashes do not match!');
+        console.log('Message hashes do not match!');  // TODO: from here
+        return;
+      }
+      totalValue += interface(transferValue);
+   }
+   console.log('Total value = ' + totalValue);
+}
 
 function sleep (time) {
   return new Promise((resolve) => setTimeout(resolve, time));
@@ -218,17 +258,32 @@ function toHex(str) {
   return hex
 }
 
-function signMessage(message) {
+function signMessage(instanceAddress, transferValue) {
    let address = web3.eth.accounts[0]; // web3.eth.defaultAccount
    console.log("I sign with "  + address)
-   web3.personal.sign('0x' + toHex(message), address, (err, signature) => {
+
+   var message = "(" + instanceAddress + "," + transferValue + ")";
+   var msgHash = '0x' + toHex(message);
+
+   web3.personal.sign(msgHash, address, (err, signature) => {
       if(err)  {
         console.log("Error generating signature.");
         return;
       } 
+      console.log('The message hash');
+      console.log(msgHash);
+      console.log('The signature');
+      console.log(signature);
+
+      var pastSignatures = store.get('signatures');
+      pastSignatures.push([instanceAddress, transferValue, msgHash, signature]);
+      store.set('signatures', pastSignatures);
+
+      $("#signature-from-buyer").prepend('<li>' + 'Msg Hash: ' + msgHash + '\n' + 'sig: ' + signature  + '</li>');
+
       // should return the signature, transaction will execute on chain if the signature
       // of the message is valid
-      verifySignedMessage(message, signature);
+      //verifySignedMessage(message, signature);
     }
   );
 }

@@ -23,15 +23,12 @@
     <!-- Truffle contract  will our life easier when interacting with smart contracts -->
     <script src="JShelpers/truffle-contract.js"></script>
     <script src="JShelpers/store.modern.min.js"></script>
-    <script type="text/javascript" src="jquery.simple.websocket.js"></script>
+    <!-- <script src="JShelpers/simplewebsocket.min.js"></script> -->
 
     <!-- app.js is where we will write our JS logic -->
-    <script src="js/app.js"></script>
+    <script src="js/index.js"></script>
 
 
-  <script>
-      w3IncludeHTML();
-  </script>
 
   <style>
 @import url("https://fonts.googleapis.com/css?family=Roboto:400,700");
@@ -459,6 +456,26 @@ div.tooltip-inner {
                         style="font-size: 16px; text-align:left; border-right-width: 0px;">
                         <span class="input-group-btn">
                             <button type="button" class="btn btn-default token_buy" data-toggle="tooltip" data-placement="bottom" onclick="executePaymnent()" title="Pay">Pay</button>
+                          </span>
+                    </div>
+                  </div>
+      </div>
+
+        <div class="main_switch" id="transfer-view" style="display: none">
+          <div>
+              <ul id="signature-from-buyer">
+              </ul>
+          </div> 
+          <div class="row">
+              <div class="col-xs-8 col-xs-offset-2 uppertoolbar">
+                <div class="row deposit">
+                  <div class="col-sm-12">
+                    <div class="input-group input-group">
+                      <span class="input-group-addon account-label" style="font-size: 16px">Payment Confirmations from Buyer</span>
+                      <input type="text" class="form-control tkn-balance tkn-decimals" id="payment_value" placeholder="Amount ETH"
+                        style="font-size: 16px; text-align:left; border-right-width: 0px;">
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default token_buy" data-toggle="tooltip" data-placement="bottom" onclick="closeChannel()" title="Pay">Close Channel</button>
                           </span>
                     </div>
                   </div>
