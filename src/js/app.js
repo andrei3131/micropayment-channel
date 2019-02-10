@@ -4,8 +4,6 @@ const nullAddress = '0x0000000000000000000000000000000000000000';
 const vendor_address = '0xeB69331eE6C91C97FDE4B11ab0f8b69F6c7fCf2D';
 
 
-
-
 //import {Personal} from 'web3-eth-personal';
 
 //var Personal = require('../../node_modules/web3-eth-personal')
@@ -27,6 +25,21 @@ $(function() {
 function init() {
   // We init web3 so we have access to the blockchain
   initWeb3();
+
+
+  
+  // const wss = new WebSocketServer({ port: 8080 })
+  // wss.on('connection', ((ws) => {
+  // ws.on('message', (message) => {
+  //       console.log(`received: ${message}`);
+  //       });
+
+  //       ws.on('end', () => {
+  //       console.log('Connection ended...');
+  //       });
+
+  //       ws.send('Hello Client');
+  // }));
 }
 
 function initWeb3() {
@@ -180,7 +193,14 @@ function openChannel() {
         });
       }); 
   })
+}
 
+
+function executePaymnent() {
+   store.set('user', [{ name:'Marcus' }]);
+   console.log(store.get('user'));
+
+   // take transaction and hash and send to client via file or web sockets
 }
 
 
