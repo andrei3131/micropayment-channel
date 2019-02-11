@@ -446,6 +446,9 @@ div.tooltip-inner {
       <div class="main_switch" id="transfer-view" style="display: none">
           <span id="opened-icon-transfer" class="glyphicon glyphicon-ok-circle on-state on-state-opened" aria-hidden="true"></span>
           <span id="opened-message-transfer"></span>
+          <div>
+              <span id="paid_so_far"><br></span>
+          </div>
           <div class="row">
               <div class="col-xs-8 col-xs-offset-2 uppertoolbar">
                 <div class="row deposit">
@@ -472,8 +475,6 @@ div.tooltip-inner {
                   <div class="col-sm-12">
                     <div class="input-group input-group">
                       <span class="input-group-addon account-label" style="font-size: 16px">Payment Confirmations from Buyer</span>
-                      <input type="text" class="form-control tkn-balance tkn-decimals" id="payment_value" placeholder="Amount ETH"
-                        style="font-size: 16px; text-align:left; border-right-width: 0px;">
                         <span class="input-group-btn">
                             <button type="button" class="btn btn-default token_buy" data-toggle="tooltip" data-placement="bottom" onclick="closeChannel()" title="Pay">Close Channel</button>
                           </span>
@@ -481,8 +482,8 @@ div.tooltip-inner {
                   </div>
       </div>
           
-            
-    
+  
+
 
     <!-- <div id="balance">
       The balance is: 

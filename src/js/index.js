@@ -3,7 +3,8 @@ var ChannelContract;
 const nullAddress = '0x0000000000000000000000000000000000000000';
 const vendor_address = '0xeB69331eE6C91C97FDE4B11ab0f8b69F6c7fCf2D';
 
-
+var numPaymentsForDemo = 0;
+var paidSoFar = 0;
 //import {Personal} from 'web3-eth-personal';
 
 //var Personal = require('../../node_modules/web3-eth-personal')
@@ -179,7 +180,7 @@ function openChannel() {
         value: web3.toWei(channel_value, 'ether'),
       }
 
-      instance.channel(vendor_address, timeout, load_up).then((result)=>  {
+      instance.createChannel(vendor_address, timeout, load_up).then((result)=>  {
           console.log("Send transaction successful " + result)
           showAlert('opened', "Channel opened.");
 
@@ -200,18 +201,34 @@ function openChannel() {
 // Buyer
 function executePaymnent() {
    // take contract address and hash and send to client via file or web sockets
+   numPaymentsForDemo++;
    ChannelContract
     .deployed()
     .then(instance => {
-      var transferValue = $('#payment_value').val();
+      var transferValue = parseInt($('#payment_value').val());
+      paidSoFar += transferValue
+      $('#paid_so_far').text('Paid so far: ' + paidSoFar + ' ETH' + '\n');
+
       console.log(transferValue);
 
-      signMessage(instance.address, transferValue);
-  })
+      signMessage(instance.address, paidSoFar);
+  });
+  // if(numPaymentsForDemo == 3) {
+  //   showView('seller-view');
+  // }
 }
 
 
-//Seler
+function splitSignature(signature) {
+  var r = signature.slice(0, 66);
+  var s = '0x' + signature.slice(66, 130);
+  var v = '0x' + signature.slice(130, 132);
+  v = web3.toDecimal(v);
+  console.log(v, r, s);
+  return [ v, r, s ];
+}
+
+//Seller
 function closeChannel(msgHash, signature) {
     //var signature = 
 
@@ -224,24 +241,43 @@ function closeChannel(msgHash, signature) {
       return;
    }
 
-   var totalValue = 0;
-   for(var i = 0; i < pastSignatures.length; i++) {
-      var historyEntry = pastSignatures[i]; 
-      var instanceAddress = historyEntry[0];
-      var transferValue = historyEntry[1];
-      var receivedMsgHash = historyEntry[2];
-      var buyerSignature = historyEntry[3];
 
-      var message = "(" + instanceAddress + "," + transferValue + ")";
-      var msgHash = '0x' + toHex(message);
-      if(msgHash != receivedMsgHash) {
-        showAlert('error', 'Message hashes do not match!');
-        console.log('Message hashes do not match!');  // TODO: from here
-        return;
-      }
-      totalValue += interface(transferValue);
-   }
+   //[instanceAddress, transferValue, msgHash, signature]
+
+   var totalValue     = pastSignatures[pastSignatures.length - 1][1];
+   var msgHash        = pastSignatures[pastSignatures.length - 1][2];
+   var buyerSignature = pastSignatures[pastSignatures.length - 1][3];
+
+
+   [v, r, s] = splitSignature(buyerSignature);
+
+   console.log('xxxxxxx' +  v + ', ' + r + ', ' + s);
+
+   console.log('Message hash when closing channel' + msgHash);
+   console.log('Buyer signature when closing channel' + buyerSignature);
+
+   //verifySignedMessage(msgHash, buyerSignature);
+
    console.log('Total value = ' + totalValue);
+
+   ChannelContract
+   .deployed()
+   .then(instance => {
+      var msgHashSeller = keccak256Equivalent(instance.address, totalValue);
+      console.log('Msg hash SELLER' + msgHashSeller);
+      console.log('Msg hash BUYER'  + msgHash);
+    instance.closeChannel(msgHash, v, r, s, totalValue).then( () =>  {
+        web3.eth.sign(msgHash, vendor_address, (err, sellerSignature) => {
+            console.log('Message hash when closing channel' + msgHash);
+            console.log('Buyer signature when closing channel' + buyerSignature);
+            console.log('Seller signature when closing channel' + buyerSignature);
+            
+            [vSeller, rSeller, sSeller] = splitSignature(sellerSignature);
+
+            instance.closeChannel(msgHash, vSeller, rSeller, sSeller, totalValue);
+        })
+   })
+  });
 }
 
 function sleep (time) {
@@ -255,17 +291,40 @@ function toHex(str) {
   for(var i= 0; i < str.length; i++) {
       hex += '' + str.charCodeAt(i).toString(16)
   }
-  return hex
+  return hex;
+}
+
+
+function keccak256Equivalent(...args) {
+  args = args.map(arg => {
+      if (typeof arg === 'string') {
+          if (arg.substring(0, 2) === '0x') {
+              return arg.slice(2);
+          } else {
+              return web3.toHex(arg).slice(2);
+          }
+      }
+
+      if (typeof arg === 'number') {
+          return (arg).toString(16).padStart(64, 0);
+      } else {
+        return '';
+      }
+  });
+
+  args = args.join('');
+
+  return web3.sha3(args, { encoding: 'hex' });
 }
 
 function signMessage(instanceAddress, transferValue) {
    let address = web3.eth.accounts[0]; // web3.eth.defaultAccount
    console.log("I sign with "  + address)
 
-   var message = "(" + instanceAddress + "," + transferValue + ")";
-   var msgHash = '0x' + toHex(message);
+  console.log('Transfer value: ' + transferValue);
+   var msgHash = keccak256Equivalent(instanceAddress, transferValue)
 
-   web3.personal.sign(msgHash, address, (err, signature) => {
+   web3.eth.sign(address, msgHash, (err, signature) => {
       if(err)  {
         console.log("Error generating signature.");
         return;
@@ -279,7 +338,7 @@ function signMessage(instanceAddress, transferValue) {
       pastSignatures.push([instanceAddress, transferValue, msgHash, signature]);
       store.set('signatures', pastSignatures);
 
-      $("#signature-from-buyer").prepend('<li>' + 'Msg Hash: ' + msgHash + '\n' + 'sig: ' + signature  + '</li>');
+      $("#signature-from-buyer").prepend('<li>' + 'Message Hash: ' + msgHash.substr(0, 10) + '...' + ', Signature: ' + signature.substr(0, 10) + '...' + ', Value: ' + transferValue  + '</li>');
 
       // should return the signature, transaction will execute on chain if the signature
       // of the message is valid
@@ -288,14 +347,14 @@ function signMessage(instanceAddress, transferValue) {
   );
 }
 
-function verifySignedMessage(message, signature) {
+function verifySignedMessage(msgHash, signature) {
   ChannelContract
     .deployed()
     .then(instance => {
-      let eth_message = `\x19Ethereum Signed Message:\n${message.length}${message}`
-      let message_sha = web3.sha3(eth_message);
+      //let eth_message = `\x19Ethereum Signed Message:\n${message.length}${message}`
+      //let message_sha = web3.sha3(eth_message);
 
-      return instance.recoverSigner(message_sha, signature);
+      return instance.recoverSigner(msgHash, signature);
     })
     .then(data => {
       console.log('-----data------')

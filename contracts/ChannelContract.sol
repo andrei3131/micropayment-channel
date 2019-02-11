@@ -19,7 +19,7 @@ contract ChannelContract {
     */
     function () external payable { }
 
-    function channel(address payable _to, uint _timeout) public payable {
+    function createChannel(address payable _to, uint _timeout) public payable {
         require(msg.value >= servicePrice);
 
         channelReceiver = _to;
@@ -29,9 +29,9 @@ contract ChannelContract {
     }
 
 
-    function closeChannel(bytes32 msgHash, bytes memory sig, uint value) public {
+    function closeChannel(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s, uint value) public {
 
-        address signer = recoverSigner(msgHash, sig);
+        address signer = ecrecover(msgHash, v, r, s);
         require(signer == channelSender || signer == channelReceiver);
 
         // signature valid
@@ -44,7 +44,7 @@ contract ChannelContract {
 
         if(signatures[proof] == 0x0000000000000000000000000000000000000000) {
             signatures[proof] = signer;
-        } else if(signatures[proof] != signer) {
+        } else {
             bool success = channelReceiver.send(value);
             if(!success) {
                 revert();
@@ -61,7 +61,7 @@ contract ChannelContract {
     }
 
     // Message signature verification
-    function splitSignature(bytes memory sig) internal pure returns (uint8, bytes32, bytes32) {
+    function splitSignature(bytes32 sig) internal pure returns (uint8, bytes32, bytes32) {
         require(sig.length == 65);
 
         bytes32 r;
@@ -81,7 +81,7 @@ contract ChannelContract {
     }
     
     // usage https://programtheblockchain.com/posts/2018/02/17/signing-and-verifying-messages-in-ethereum/
-    function recoverSigner(bytes32 msgHash, bytes memory sig) internal pure returns (address) {
+    function recoverSigner(bytes32 msgHash, bytes32 sig) public pure returns (address) {
         uint8 v;
         bytes32 r;
         bytes32 s;
@@ -89,9 +89,5 @@ contract ChannelContract {
         (v, r, s) = splitSignature(sig);
 
         return ecrecover(msgHash, v, r, s);
-    }
-    
-    function isSigned(address _addr, bytes32 msgHash, bytes memory sig) internal pure returns (bool) {
-        return recoverSigner(msgHash, sig) == _addr;
     }
 }
