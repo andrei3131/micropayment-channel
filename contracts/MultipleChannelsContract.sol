@@ -66,13 +66,9 @@ contract ChannelContract {
         }
     }
 
-    event ChannelDestructed(string message);
-
     function channelTimeout() public {
         require(startDate + timeout <= now);
         // self-destruct if expired
-
-        emit ChannelDestructed("Channel expired. Destroying...");
 
         selfdestruct(channelSender);
     }

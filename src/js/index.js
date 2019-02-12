@@ -127,17 +127,19 @@ function showAccounts() {
     $accounts.change();
 }
 
-
-
 function getEvents () {
   ChannelContract.deployed().then(function(instance) {
     var events = instance.allEvents(function(error, log){
       if (!error) {
-        $("#eventsList").prepend('<li>' + log.event + '</li>'); // Using JQuery, we will add new events to a list in our index.html
-        console.log('*** Event intercepted: ***');
-        console.log(log.event + ": ");
-        for(var key in log.args) {
-            console.log("- " + key + ": " + log.args[key]);
+        if(log.event == "ChannelDestructed") {
+           $("#channeldestructed").prepend('<li>' + 'Channel expired and destructed.' + '</li>');
+        } else {
+          $("#eventsList").prepend('<li>' + log.event + '</li>');
+          console.log('*** Event intercepted: ***');
+          console.log(log.event + ": ");
+          for(var key in log.args) {
+              console.log("- " + key + ": " + log.args[key]);
+          }
         }
       }
     });
@@ -154,6 +156,14 @@ function showAlert(type, message) {
     });
 }
 
+function channelTimeout() {
+  ChannelContract
+  .deployed()
+  .then(instance => {
+       instance.channelTimeout();
+  });
+  getBalance();
+}
 
 function openChannel() {
   var channel_value = $('#channel_value').val();
