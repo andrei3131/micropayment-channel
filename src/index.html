@@ -450,14 +450,26 @@ div.tooltip-inner {
               <span id="paid_so_far"><br></span>
           </div>
           <div>
-              <ul id="channeldestructed">
-              </ul>
-          </div> 
+              <ul id="channel-status">
+                </ul>
+          </div>
           <span>
               <span class="btn btn-default topup_start col-xs-8 col-xs-offset-2 uppertoolbar" onclick="channelTimeout()" style="font-size: 16px">Check Channel Timeout</span>
           </span>
           <div class="row">
               <div class="col-xs-8 col-xs-offset-2 uppertoolbar">
+                  <div class="row deposit">
+                      <div class="col-sm-12">
+                        <div class="input-group input-group">
+                          <span class="input-group-addon account-label" style="font-size: 16px">Select a Channel</span>
+                          <input type="text" class="form-control tkn-balance tkn-decimals" id="current_channel" placeholder="Channel ID"
+                            style="font-size: 16px; text-align:left; border-right-width: 0px;">
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default token_buy" data-toggle="tooltip" data-placement="bottom" onclick="setCurrentChannel()" title="Pay">Set</button>
+                              </span>
+                        </div>
+                      </div>   
+                    </div>
                 <div class="row deposit">
                   <div class="col-sm-12">
                     <div class="input-group input-group">
@@ -469,6 +481,8 @@ div.tooltip-inner {
                           </span>
                     </div>
                   </div>
+              </div>
+          </div>
       </div>
 
         <div class="main_switch" id="transfer-view" style="margin-top: 40px; display: none">
@@ -487,6 +501,8 @@ div.tooltip-inner {
                   <div class="col-sm-12">
                     <div class="input-group input-group">
                       <span class="input-group-addon account-label" style="font-size: 16px">Payment Confirmations from Buyer</span>
+                      <input type="text" class="form-control tkn-balance tkn-decimals" id="channel_id" placeholder="ID"
+                        style="font-size: 16px; text-align:left; border-right-width: 0px;">
                         <span class="input-group-btn">
                             <button type="button" class="btn btn-default token_buy" data-toggle="tooltip" data-placement="bottom" onclick="closeChannel()" title="Pay">Close Channel</button>
                           </span>

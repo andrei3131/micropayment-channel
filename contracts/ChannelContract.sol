@@ -38,7 +38,7 @@ contract ChannelContract {
     event Status(bool result);
     event PrintAddress(address printedAddress);
 
-    function closeChannel(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s, uint256 value) public payable {
+    function closeChannel(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s, uint256 value) public {
 
         address signer = ecrecover(msgHash, v, r, s);
         require(signer == channelSender || signer == channelReceiver);
@@ -51,7 +51,7 @@ contract ChannelContract {
         // both sender and receiver must have sign the redeemable value (by sender)
         require(proof == msgHash);
 
-        if(signatures[proof] == 0x0000000000000000000000000000000000000000) {
+        if(signatures[proof] == address(0)) {
             signatures[proof] = signer;
             emit FirstClose("test first close");
         } else {
