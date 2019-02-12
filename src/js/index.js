@@ -6,6 +6,8 @@ const vendor_address = '0xeB69331eE6C91C97FDE4B11ab0f8b69F6c7fCf2D';
 
 var paidSoFar = 0;
 
+// Change this to set the mode:
+// unique unidirectional channel or multiple unidirectional channels
 var multiChannel = true;
 var currentChannel = -1;
 
