@@ -28,8 +28,17 @@ contract ChannelContract {
         timeout = _timeout;
     }
 
+    event FirstClose(string first);
+    event SecondClose(string second);
+    event AfterSend(string aftersend);
+    event HereOne(string aftersend);
+    event HereTwo(string aftersend);
+    event HereThree(string aftersend);
+    event CheckBalance(string checkBalance, uint balance);
+    event Status(bool result);
+    event PrintAddress(address printedAddress);
 
-    function closeChannel(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s, uint value) public {
+    function closeChannel(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s, uint256 value) public payable {
 
         address signer = ecrecover(msgHash, v, r, s);
         require(signer == channelSender || signer == channelReceiver);
@@ -44,11 +53,15 @@ contract ChannelContract {
 
         if(signatures[proof] == 0x0000000000000000000000000000000000000000) {
             signatures[proof] = signer;
+            emit FirstClose("test first close");
         } else {
-            bool success = channelReceiver.send(value);
-            if(!success) {
-                revert();
-            }
+            emit CheckBalance("Check balance before send", address(this).balance);
+            emit CheckBalance("Check amount before send", value * 1 ether);
+            emit PrintAddress(channelReceiver);
+            emit PrintAddress(channelSender);
+            channelReceiver.transfer(value * 1 ether); /// value * oneWei);
+            emit SecondClose("test second close");
+            emit AfterSend("after send, self destruct");
             selfdestruct(channelSender);
         }
     }

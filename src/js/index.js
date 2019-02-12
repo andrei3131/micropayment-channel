@@ -3,6 +3,7 @@ var ChannelContract;
 const nullAddress = '0x0000000000000000000000000000000000000000';
 const vendor_address = '0xeB69331eE6C91C97FDE4B11ab0f8b69F6c7fCf2D';
 
+
 var numPaymentsForDemo = 0;
 var paidSoFar = 0;
 //import {Personal} from 'web3-eth-personal';
@@ -180,6 +181,7 @@ function openChannel() {
         value: web3.toWei(channel_value, 'ether'),
       }
 
+      console.log('Sending to contract' +  web3.toWei(channel_value, 'ether'));
       instance.createChannel(vendor_address, timeout, load_up).then((result)=>  {
           console.log("Send transaction successful " + result)
           showAlert('opened', "Channel opened.");
@@ -263,21 +265,47 @@ function closeChannel(msgHash, signature) {
    ChannelContract
    .deployed()
    .then(instance => {
-      var msgHashSeller = keccak256Equivalent(instance.address, totalValue);
-      console.log('Msg hash SELLER' + msgHashSeller);
-      console.log('Msg hash BUYER'  + msgHash);
-    instance.closeChannel(msgHash, v, r, s, totalValue).then( () =>  {
-        web3.eth.sign(msgHash, vendor_address, (err, sellerSignature) => {
-            console.log('Message hash when closing channel' + msgHash);
-            console.log('Buyer signature when closing channel' + buyerSignature);
-            console.log('Seller signature when closing channel' + buyerSignature);
-            
-            [vSeller, rSeller, sSeller] = splitSignature(sellerSignature);
+      instance.closeChannel(msgHash, v, r, s, totalValue).then( () =>  {
+        console.log('First channel close')
+        //!!!!!! TODO: See why  receiver does not receive money
+      });
+    });
+     
+     
+    console.log('Ever hereeee');
+    var vendor = web3.eth.accounts[0];
+    console.log('Current should be venodr' + vendor);
 
-            instance.closeChannel(msgHash, vSeller, rSeller, sSeller, totalValue);
-        })
-   })
-  });
+    var msgHashSeller =  msgHash; // keccak256Equivalent(instance.address, totalValue);
+    console.log('Msg hash SELLER' + msgHashSeller);
+    console.log('Msg hash BUYER'  + msgHash);
+
+    var sellerSig = null;
+    web3.eth.sign(vendor_address, msgHashSeller, (err, sellerSignature) => {  
+      //web3.personal.sign(msgHashSeller, vendor_address).then((sellerSignature) => {
+      sellerSig = sellerSignature
+      console.log('Message hash when closing channel' + msgHashSeller);
+      console.log('Buyer signature when closing channel' + buyerSignature);
+      console.log('Seller signature when closing channel' + sellerSignature);
+
+      ChannelContract
+      .deployed()
+      .then(instance => {
+  
+        [vSeller, rSeller, sSeller] = splitSignature(sellerSignature);
+        instance.closeChannel(msgHashSeller, vSeller, rSeller, sSeller, totalValue).then( () => {
+          console.log('This is after second close');
+        });
+       }); 
+    });
+
+    sleep(1000).then(() => {
+            
+    });
+
+  
+
+
 }
 
 function sleep (time) {
