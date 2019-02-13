@@ -1,4 +1,4 @@
-# unidirectional micropayment-channel
+# Unidirectional Micropayment Channel
 
 Use the following Ganache mnemonic to generate the buyer and sender addresses
 used by the smart contract.
