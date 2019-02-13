@@ -1,15 +1,15 @@
-var web3Provider = null;
-var ChannelContract;
-const nullAddress = '0x0000000000000000000000000000000000000000';
-const vendor_address = '0xeB69331eE6C91C97FDE4B11ab0f8b69F6c7fCf2D';
-
-
-var paidSoFar = 0;
-
 // Change this to set the mode:
 // unique unidirectional channel or multiple unidirectional channels
+/********************************************************************/
 var multiChannel = true;
 var currentChannel = -1;
+/**********************************************************************/
+
+var ChannelContract;
+var web3Provider     = null;
+const nullAddress    = '0x0000000000000000000000000000000000000000';
+const vendor_address = '0xeB69331eE6C91C97FDE4B11ab0f8b69F6c7fCf2D';
+var paidSoFar        = 0;
 
 
 // Control flow
@@ -18,6 +18,19 @@ function showView(id) {
   $(".main_switch:not("+id+")").hide();
   $(".container").show();
 }
+
+function getSelectedAccount() {
+  return $( "#accounts option:selected" ).text();
+}
+
+function getVendorAccount() {
+  return $('#vendor_address').val();
+}
+
+function setCurrentChannel() {
+   currentChannel = parseInt($('#current_channel').val());
+}
+
 
 // When the page loads, this will call the init() function
 $(function() {
@@ -30,14 +43,12 @@ function initWeb3() {
   if (typeof web3 !== 'undefined' && typeof web3.currentProvider !== 'undefined') {
     web3Provider = web3.currentProvider;
     web3 = new Web3(web3Provider);
-   // personal = new Personal(Web3.currentProvider);
     web3Provider.enable()
   } else {
     console.error('No web3 provider found. Please install Metamask on your browser.');
     alert('No web3 provider found. Please install Metamask on your browser.');
   }
 
-  // we init the ChannelContract infos so we can interact with it
   if(multiChannel) {
     initInterfaceMultiChannel();
   } else {
@@ -60,7 +71,6 @@ function initInterfaceMultiChannel() {
   $.getJSON('MultiChannelContract.json', function(data) {
     ChannelContract = TruffleContract(data);
     ChannelContract.setProvider(web3Provider);
-
     getEvents();
     $('#vendor_address').val(vendor_address);
     showAccounts();
@@ -70,7 +80,6 @@ function initInterfaceMultiChannel() {
 
 function getBalance() {
   var selectedAccountAddress = getSelectedAccount();
-
   if(selectedAccountAddress ==  "Select account connected to Metamask") return;
   web3.eth.getBalance(selectedAccountAddress, function(err, balance) {
     balance = web3.fromWei(balance, "ether") + " ETH"        
@@ -84,17 +93,7 @@ function getBalance() {
   });
 }
 
-function getSelectedAccount() {
-  return $( "#accounts option:selected" ).text();
-}
 
-function getVendorAccount() {
-  return $('#vendor_address').val();
-}
-
-function setCurrentChannel() {
-   currentChannel = parseInt($('#current_channel').val());
-}
 
 function showAccounts() {
   var allAccounts = web3.eth.accounts;
@@ -104,7 +103,6 @@ function showAccounts() {
   }
   console.log(allAccounts);
     var $accounts = $('#accounts');
-
     for(var i = 0; i < allAccounts.length; i++) {
       var o = $("<option></option>").attr("value", i).text(allAccounts[i]);
       $accounts.append(o);
@@ -123,7 +121,6 @@ function getEvents () {
         } else if (log.event == "ClosedChannel") {   
            $("#channel-status").prepend('<li>&nbsp&nbsp' + 'Closed channel with ID: ' + log.args['id'] + '</li>');
         } else {
-          //$("#eventsList").prepend('<li>' + log.event + '</li>');
           console.log('*** Event intercepted: ***');
           console.log(log.event + ": ");
           for(var key in log.args) {
@@ -184,7 +181,6 @@ function openChannel() {
       instance.createChannel(vendor_address, timeout, load_up).then((result)=>  {
           console.log("Send transaction successful " + result)
           showAlert('opened', "Channel opened.");
-
           // update user balance
           getBalance();
 
@@ -214,16 +210,6 @@ function executePaymnent() {
   });
 }
 
-
-function splitSignature(signature) {
-  var r = signature.slice(0, 66);
-  var s = '0x' + signature.slice(66, 130);
-  var v = '0x' + signature.slice(130, 132);
-  v = web3.toDecimal(v);
-  console.log(v, r, s);
-  return [ v, r, s ];
-}
-
 //Seller
 function closeChannel() {
    var pastSignatures = null; 
@@ -245,8 +231,15 @@ function closeChannel() {
    } else {
       closeChannelUnique(pastSignatures);
    }
+}
 
-   
+function splitSignature(signature) {
+  var r = signature.slice(0, 66);
+  var s = '0x' + signature.slice(66, 130);
+  var v = '0x' + signature.slice(130, 132);
+  v = web3.toDecimal(v);
+  console.log(v, r, s);
+  return [ v, r, s ];
 }
 
 function closeChannelWithSetID(pastSignatures) {
@@ -258,7 +251,6 @@ function closeChannelWithSetID(pastSignatures) {
   var totalValue     = pastSignatures[pastSignatures.length - 1][1];
   var msgHash        = pastSignatures[pastSignatures.length - 1][2];
   var buyerSignature = pastSignatures[pastSignatures.length - 1][3];
-
 
   [v, r, s] = splitSignature(buyerSignature);
 
@@ -289,7 +281,6 @@ function closeChannelWithSetID(pastSignatures) {
      ChannelContract
      .deployed()
      .then(instance => {
- 
        [vSeller, rSeller, sSeller] = splitSignature(sellerSignature);
        instance.closeChannel(currentChannel, msgHashSeller, vSeller, rSeller, sSeller, totalValue).then( () => {
          console.log('This is after second close');
