@@ -52,7 +52,6 @@ contract MultiChannelContract {
 
         address signer = ecrecover(msgHash, v, r, s);
         require(signer == channelSender || signer == channelReceiver);
-
         // signature valid
 
         // hash of contract address and amount claimed by receiver
