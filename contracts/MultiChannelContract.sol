@@ -11,10 +11,11 @@ contract MultiChannelContract {
         mapping (bytes32 => address) signatures;
     }
     
-    uint lastChannelId = 0;
-    mapping (uint => Channel) channelMap;
-    mapping (uint => bool) openChannels;
-    mapping (uint => bool) closedChannels;
+    // private, not publicly accessible
+    uint private lastChannelId = 0;
+    mapping (uint => Channel) private channelMap;
+    mapping (uint => bool) private openChannels;
+    mapping (uint => bool) private closedChannels;
 
     /* 
         The fallback function is necessary in case a user wants to interact with the contract
@@ -40,16 +41,6 @@ contract MultiChannelContract {
         lastChannelId++;
     }
 
-    event FirstClose(string first);
-    event SecondClose(string second);
-    event AfterSend(string aftersend);
-    event HereOne(string aftersend);
-    event HereTwo(string aftersend);
-    event HereThree(string aftersend);
-    event CheckBalance(string checkBalance, uint balance);
-    event Status(bool result);
-    event PrintAddress(address printedAddress);
-
     event ClosedChannel(uint id);
 
     function closeChannel(uint channelId, bytes32 msgHash, uint8 v, bytes32 r, bytes32 s, uint256 value) public payable {
@@ -72,17 +63,10 @@ contract MultiChannelContract {
 
         if(signatures[proof] == address(0)) {
             signatures[proof] = signer;
-            emit FirstClose("test first close");
         } else {
-            emit CheckBalance("Check balance before send", address(this).balance);
-            emit CheckBalance("Check amount before send", value * 1 ether);
-            emit PrintAddress(channelReceiver);
-            emit PrintAddress(channelSender);
+            // transfer function automatically reverts transaction on failure
             channelReceiver.transfer(value * 1 ether); /// value * oneWei);
-            emit SecondClose("test second close");
-            emit AfterSend("after send, self destruct");
             
-
             openChannels[channelId] = false;
             closedChannels[channelId] = true;
             emit ClosedChannel(channelId);

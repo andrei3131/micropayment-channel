@@ -2,13 +2,14 @@ pragma solidity ^0.5.0;
 
 contract ChannelContract {
 
-    address payable public channelSender;   // make private
-    address payable public channelReceiver; // make private
-    uint public startDate;
-    uint public timeout;
-    uint public servicePrice = 1 ether;
-    mapping (bytes32 => address) signatures;
-
+    // private, not publicly accessible
+    address payable private channelSender;   // make private
+    address payable private channelReceiver; // make private
+    uint private startDate;
+    uint private timeout;
+    uint private servicePrice = 1 ether;
+    mapping (bytes32 => address) private signatures;
+    bool private calledOnceGuard = false;
 
     /* 
         The fallback function is necessary in case a user wants to interact with the contract
@@ -22,21 +23,16 @@ contract ChannelContract {
     function createChannel(address payable _to, uint _timeout) public payable {
         require(msg.value >= servicePrice);
 
+        require(!calledOnceGuard);
+
+        // Ensure the channel is usable only once
+        calledOnceGuard = true;
+
         channelReceiver = _to;
         channelSender = msg.sender;
         startDate = now;
         timeout = _timeout;
     }
-
-    event FirstClose(string first);
-    event SecondClose(string second);
-    event AfterSend(string aftersend);
-    event HereOne(string aftersend);
-    event HereTwo(string aftersend);
-    event HereThree(string aftersend);
-    event CheckBalance(string checkBalance, uint balance);
-    event Status(bool result);
-    event PrintAddress(address printedAddress);
 
     function closeChannel(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s, uint256 value) public {
 
@@ -53,15 +49,9 @@ contract ChannelContract {
 
         if(signatures[proof] == address(0)) {
             signatures[proof] = signer;
-            emit FirstClose("test first close");
         } else {
-            emit CheckBalance("Check balance before send", address(this).balance);
-            emit CheckBalance("Check amount before send", value * 1 ether);
-            emit PrintAddress(channelReceiver);
-            emit PrintAddress(channelSender);
+            // transfer function automatically reverts transaction on failure
             channelReceiver.transfer(value * 1 ether); /// value * oneWei);
-            emit SecondClose("test second close");
-            emit AfterSend("after send, self destruct");
             selfdestruct(channelSender);
         }
     }
