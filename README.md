@@ -1,5 +1,7 @@
 # Unidirectional Micropayment Channel
 
+First install Truffle, Ganache, Metamask and run npm install to get the project dependencies.
+
 Use the following Ganache mnemonic to generate the buyer and sender addresses
 used by the smart contract.
 Ganache mnemonic: become awake empower census float naive butter latin enlist nephew clock news
